@@ -86,6 +86,7 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 
 			Object response = agentRequestHandler.handle(request);
 			socketServerOutputStream.writeObject(response);
+			socketServerOutputStream.flush();
 		}
 		catch (EOFException e)
 		{

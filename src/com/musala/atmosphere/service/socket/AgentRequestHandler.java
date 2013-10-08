@@ -1,6 +1,9 @@
 package com.musala.atmosphere.service.socket;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
@@ -24,7 +27,7 @@ public class AgentRequestHandler
 	 * Handles requests and returns responses.
 	 * 
 	 * @param socketServerRequest
-	 * @return - a response to the request.
+	 * @return a response to the request.
 	 */
 	public Object handle(ServiceRequestProtocol socketServerRequest)
 	{
@@ -37,6 +40,10 @@ public class AgentRequestHandler
 
 			case GET_BATTERY_STATE:
 				response = getBatteryState();
+				break;
+
+			case GET_BATTERY_LEVEL:
+				response = getBatteryLevel();
 				break;
 
 			case SET_WIFI_ON:
@@ -54,7 +61,7 @@ public class AgentRequestHandler
 	/**
 	 * Returns response to a validation request.
 	 * 
-	 * @return - validation response.
+	 * @return validation response.
 	 */
 	private Object validate()
 	{
@@ -64,13 +71,25 @@ public class AgentRequestHandler
 	/**
 	 * Gets the battery state of the device.
 	 * 
-	 * @return - the battery state of the device.
+	 * @return the battery state of the device.
 	 */
 	private Object getBatteryState()
 	{
 		// TODO implement logic behind getting battery state.
 
 		return BatteryState.UNKNOWN;
+	}
+
+	private Object getBatteryLevel()
+	{
+		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		Intent batteryStatus = context.registerReceiver(null, filter);
+
+		int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+		int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+		Integer batteryLevel = (100 * level) / scale;
+		return batteryLevel;
 	}
 
 	/**
