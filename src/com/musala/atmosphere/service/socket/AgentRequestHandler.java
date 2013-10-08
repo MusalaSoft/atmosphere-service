@@ -46,6 +46,10 @@ public class AgentRequestHandler
 				response = getBatteryLevel();
 				break;
 
+			case GET_POWER_STATE:
+				response = getPowerState();
+				break;
+
 			case SET_WIFI_ON:
 				response = setWiFiOn();
 				break;
@@ -90,6 +94,17 @@ public class AgentRequestHandler
 
 		Integer batteryLevel = (100 * level) / scale;
 		return batteryLevel;
+	}
+
+	private Object getPowerState()
+	{
+		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		Intent batteryStatus = context.registerReceiver(null, filter);
+
+		int state = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+		// 0 => battery, other => power source connected
+		Boolean returnValue = (state != 0);
+		return returnValue;
 	}
 
 	/**
