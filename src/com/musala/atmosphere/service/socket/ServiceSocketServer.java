@@ -12,13 +12,19 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.musala.atmosphere.commons.as.ServiceConstants;
 import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
 
+/**
+ * A socket server that listens for sockets requests by the Agent, sends them to the {@link AgentRequestHandler} and
+ * sends its response back to the Agent.
+ * 
+ * @author yordan.petrov
+ * 
+ */
 public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 {
 	private static final String ATMOSPHERE_SERVICE_TAG = "AtmosphereService";
-
-	private static final int ATMOSPHERE_SERVICE_PORT = 6749;
 
 	private Context context;
 
@@ -63,7 +69,7 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 	{
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(true);
-		serverSocketChannel.socket().bind(new InetSocketAddress(ATMOSPHERE_SERVICE_PORT));
+		serverSocketChannel.socket().bind(new InetSocketAddress(ServiceConstants.SERVICE_PORT));
 
 		Log.i(ATMOSPHERE_SERVICE_TAG, "Server started.");
 	}

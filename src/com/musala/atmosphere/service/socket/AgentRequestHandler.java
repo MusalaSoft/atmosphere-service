@@ -90,6 +90,11 @@ public class AgentRequestHandler
 		return status;
 	}
 
+	/**
+	 * Gets the battery level of the device.
+	 * 
+	 * @return - integer constant, representing the battery level of the device.
+	 */
 	private Integer getBatteryLevel()
 	{
 		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -102,6 +107,12 @@ public class AgentRequestHandler
 		return batteryLevel;
 	}
 
+	/**
+	 * Gets the power state of the device.
+	 * 
+	 * @return - boolean constant, representing the power state of the device. True if the device is connected to power;
+	 *         false otherwise.
+	 */
 	private Boolean getPowerState()
 	{
 		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);

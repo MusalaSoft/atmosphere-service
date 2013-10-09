@@ -7,8 +7,6 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
-import com.musala.atmophere.service.R;
-
 /**
  * Activity designed to control the atmosphere service.
  * 
