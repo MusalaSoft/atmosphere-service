@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 
-import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
 
 /**
@@ -16,6 +15,11 @@ import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
  */
 public class AgentRequestHandler
 {
+	/**
+	 * This will be returned when some Intent.getIntExtra() method fails to retrieve the required information.
+	 */
+	private static final int GET_INT_EXTRA_FAILED_VALUE = -1;
+
 	private Context context;
 
 	public AgentRequestHandler(Context context)
@@ -75,33 +79,35 @@ public class AgentRequestHandler
 	/**
 	 * Gets the battery state of the device.
 	 * 
-	 * @return the battery state of the device.
+	 * @return - integer constant, representing the battery state of the device.
 	 */
-	private Object getBatteryState()
+	private Integer getBatteryState()
 	{
-		// TODO implement logic behind getting battery state.
+		IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		Intent getBatteryStatusIntent = context.registerReceiver(null, intentFilter);
+		Integer status = getBatteryStatusIntent.getIntExtra(BatteryManager.EXTRA_STATUS, GET_INT_EXTRA_FAILED_VALUE);
 
-		return BatteryState.UNKNOWN;
+		return status;
 	}
 
-	private Object getBatteryLevel()
+	private Integer getBatteryLevel()
 	{
 		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
 		Intent batteryStatus = context.registerReceiver(null, filter);
 
-		int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-		int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+		int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, GET_INT_EXTRA_FAILED_VALUE);
+		int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, GET_INT_EXTRA_FAILED_VALUE);
 
 		Integer batteryLevel = (100 * level) / scale;
 		return batteryLevel;
 	}
 
-	private Object getPowerState()
+	private Boolean getPowerState()
 	{
 		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
 		Intent batteryStatus = context.registerReceiver(null, filter);
 
-		int state = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+		int state = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, GET_INT_EXTRA_FAILED_VALUE);
 		// 0 => battery, other => power source connected
 		Boolean returnValue = (state != 0);
 		return returnValue;
