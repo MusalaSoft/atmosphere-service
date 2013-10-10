@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -83,14 +84,18 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 	{
 		SocketChannel socketChannel = serverSocketChannel.accept();
 
-		ObjectOutputStream socketServerOutputStream = new ObjectOutputStream(socketChannel.socket().getOutputStream());
-		ObjectInputStream socketServerInputStream = new ObjectInputStream(socketChannel.socket().getInputStream());
+		ObjectInputStream socketServerInputStream = null;
+		ObjectOutputStream socketServerOutputStream = null;
 
 		try
 		{
+			Socket baseSocket = socketChannel.socket();
+			socketServerInputStream = new ObjectInputStream(baseSocket.getInputStream());
 			ServiceRequestProtocol request = (ServiceRequestProtocol) socketServerInputStream.readObject();
 
 			Object response = agentRequestHandler.handle(request);
+
+			socketServerOutputStream = new ObjectOutputStream(baseSocket.getOutputStream());
 			socketServerOutputStream.writeObject(response);
 			socketServerOutputStream.flush();
 		}
@@ -102,9 +107,20 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 		{
 			Log.wtf(ATMOSPHERE_SERVICE_TAG, e);
 		}
-
-		socketServerInputStream.close();
-		socketServerOutputStream.close();
-		socketChannel.close();
+		finally
+		{
+			if (socketServerInputStream != null)
+			{
+				socketServerInputStream.close();
+			}
+			if (socketServerOutputStream != null)
+			{
+				socketServerOutputStream.close();
+			}
+			if (socketChannel != null)
+			{
+				socketChannel.close();
+			}
+		}
 	}
 }
