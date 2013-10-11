@@ -3,6 +3,7 @@ package com.musala.atmosphere.service.socket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 
 import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
@@ -55,7 +56,11 @@ public class AgentRequestHandler
 				break;
 
 			case SET_WIFI_ON:
-				response = setWiFiOn();
+				response = setWiFi(true);
+				break;
+
+			case SET_WIFI_OFF:
+				response = setWiFi(false);
 				break;
 
 			default:
@@ -127,12 +132,15 @@ public class AgentRequestHandler
 	/**
 	 * Turns on the WiFi of the device.
 	 * 
-	 * @return
+	 * @param state
+	 *        true if the WiFi should be on; false if it should be off.
+	 * @return a fake response, since we are not requesting any information.
 	 */
-	private Object setWiFiOn()
+	private Object setWiFi(boolean state)
 	{
-		// TODO implement logic behind setting WiFi state.
+		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		wifiManager.setWifiEnabled(state);
 
-		return null;
+		return ServiceRequestProtocol.FAKE_RESPONSE;
 	}
 }
