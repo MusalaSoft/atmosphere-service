@@ -14,7 +14,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.musala.atmosphere.commons.as.ServiceConstants;
-import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
+import com.musala.atmosphere.commons.as.ServiceRequest;
 
 /**
  * A socket server that listens for sockets requests by the Agent, sends them to the {@link AgentRequestHandler} and
@@ -91,7 +91,7 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 		{
 			Socket baseSocket = socketChannel.socket();
 			socketServerInputStream = new ObjectInputStream(baseSocket.getInputStream());
-			ServiceRequestProtocol request = (ServiceRequestProtocol) socketServerInputStream.readObject();
+			ServiceRequest request = (ServiceRequest) socketServerInputStream.readObject();
 
 			Object response = agentRequestHandler.handle(request);
 

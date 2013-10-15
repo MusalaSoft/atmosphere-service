@@ -3,10 +3,13 @@ package com.musala.atmosphere.service.socket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 
-import com.musala.atmosphere.commons.as.ServiceRequestProtocol;
+import com.musala.atmosphere.commons.as.ServiceRequest;
+import com.musala.atmosphere.commons.as.ServiceRequestType;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -34,10 +37,13 @@ public class AgentRequestHandler
 	 * @param socketServerRequest
 	 * @return a response to the request.
 	 */
-	public Object handle(ServiceRequestProtocol socketServerRequest)
+	public Object handle(ServiceRequest socketServerRequest)
 	{
+		ServiceRequestType requestType = socketServerRequest.getType();
+		Object[] arguments = socketServerRequest.getArguments();
+
 		Object response;
-		switch (socketServerRequest)
+		switch (requestType)
 		{
 			case VALIDATION:
 				response = validate();
@@ -55,16 +61,16 @@ public class AgentRequestHandler
 				response = getPowerState();
 				break;
 
-			case SET_WIFI_ON:
-				response = setWiFi(true);
+			case GET_CONNECTION_TYPE:
+				response = getConnectionType();
 				break;
 
-			case SET_WIFI_OFF:
-				response = setWiFi(false);
+			case SET_WIFI:
+				response = setWiFi(arguments);
 				break;
 
 			default:
-				response = new Object();
+				response = ServiceRequestType.ANY_RESPONSE;
 				break;
 		}
 
@@ -78,7 +84,7 @@ public class AgentRequestHandler
 	 */
 	private Object validate()
 	{
-		return ServiceRequestProtocol.VALIDATION;
+		return ServiceRequestType.VALIDATION;
 	}
 
 	/**
@@ -129,6 +135,22 @@ public class AgentRequestHandler
 		return returnValue;
 	}
 
+	private Integer getConnectionType()
+	{
+		ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+		// TODO consider returning a NetworkInfo object. Getting the network type does not assure the network is
+		// connected, connecting or available.
+
+		if (networkInfo != null)
+		{
+			Integer networkType = networkInfo.getType();
+			return networkType;
+		}
+
+		return -1;
+	}
+
 	/**
 	 * Turns on the WiFi of the device.
 	 * 
@@ -136,11 +158,13 @@ public class AgentRequestHandler
 	 *        true if the WiFi should be on; false if it should be off.
 	 * @return a fake response, since we are not requesting any information.
 	 */
-	private Object setWiFi(boolean state)
+	private Object setWiFi(Object[] arguments)
 	{
+		boolean state = (Boolean) arguments[0];
+
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		wifiManager.setWifiEnabled(state);
 
-		return ServiceRequestProtocol.FAKE_RESPONSE;
+		return ServiceRequestType.ANY_RESPONSE;
 	}
 }
