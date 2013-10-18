@@ -1,13 +1,6 @@
 package com.musala.atmosphere.service.socket;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -25,13 +18,11 @@ import com.musala.atmosphere.commons.as.ServiceRequest;
  */
 public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 {
-	private static final String ATMOSPHERE_SERVICE_TAG = "AtmosphereService";
+	public static final String ATMOSPHERE_SERVICE_TAG = "AtmosphereService";
 
 	private Context context;
 
 	private AgentRequestHandler agentRequestHandler;
-
-	private ServerSocketChannel serverSocketChannel;
 
 	public ServiceSocketServer(Context context)
 	{
@@ -46,60 +37,27 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 	{
 		try
 		{
-			initializeServer();
+			SocketObjectServer objectServer = new SocketObjectServer(ServiceConstants.SERVICE_PORT);
+			Log.i(ATMOSPHERE_SERVICE_TAG, "Server started.");
 
 			while (true)
 			{
-				listen();
+				Log.i(ATMOSPHERE_SERVICE_TAG, "Waiting for connection.");
+				objectServer.acceptConnection();
+
+				Log.i(ATMOSPHERE_SERVICE_TAG, "Connection accepted, receiving request.");
+				ServiceRequest request = (ServiceRequest) objectServer.receiveObject();
+
+				Log.i(ATMOSPHERE_SERVICE_TAG, "Handling request '" + request + "'.");
+				Object response = agentRequestHandler.handle(request);
+
+				Log.i(ATMOSPHERE_SERVICE_TAG, "Sending request response.");
+				objectServer.sendObject(response);
+				Log.i(ATMOSPHERE_SERVICE_TAG, "Closing connection.");
+				objectServer.endConnection();
 			}
 		}
 		catch (IOException e)
-		{
-			Log.wtf(ATMOSPHERE_SERVICE_TAG, e);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Starts a socket server.
-	 * 
-	 * @throws IOException
-	 */
-	private void initializeServer() throws IOException
-	{
-		serverSocketChannel = ServerSocketChannel.open();
-		serverSocketChannel.configureBlocking(true);
-		serverSocketChannel.socket().bind(new InetSocketAddress(ServiceConstants.SERVICE_PORT));
-
-		Log.i(ATMOSPHERE_SERVICE_TAG, "Server started.");
-	}
-
-	/**
-	 * Listens for requests, passes the to the {@link AgentRequestHandler} and returns the reply.
-	 * 
-	 * @throws IOException
-	 */
-	private void listen() throws IOException
-	{
-		SocketChannel socketChannel = serverSocketChannel.accept();
-
-		ObjectInputStream socketServerInputStream = null;
-		ObjectOutputStream socketServerOutputStream = null;
-
-		try
-		{
-			Socket baseSocket = socketChannel.socket();
-			socketServerInputStream = new ObjectInputStream(baseSocket.getInputStream());
-			ServiceRequest request = (ServiceRequest) socketServerInputStream.readObject();
-
-			Object response = agentRequestHandler.handle(request);
-
-			socketServerOutputStream = new ObjectOutputStream(baseSocket.getOutputStream());
-			socketServerOutputStream.writeObject(response);
-			socketServerOutputStream.flush();
-		}
-		catch (EOFException e)
 		{
 			Log.wtf(ATMOSPHERE_SERVICE_TAG, e);
 		}
@@ -107,20 +65,6 @@ public class ServiceSocketServer extends AsyncTask<Void, Void, Void>
 		{
 			Log.wtf(ATMOSPHERE_SERVICE_TAG, e);
 		}
-		finally
-		{
-			if (socketServerInputStream != null)
-			{
-				socketServerInputStream.close();
-			}
-			if (socketServerOutputStream != null)
-			{
-				socketServerOutputStream.close();
-			}
-			if (socketChannel != null)
-			{
-				socketChannel.close();
-			}
-		}
+		return null;
 	}
 }

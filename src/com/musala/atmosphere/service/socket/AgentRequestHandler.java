@@ -10,6 +10,7 @@ import android.os.BatteryManager;
 
 import com.musala.atmosphere.commons.as.ServiceRequest;
 import com.musala.atmosphere.commons.as.ServiceRequestType;
+import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -63,6 +64,10 @@ public class AgentRequestHandler
 
 			case GET_CONNECTION_TYPE:
 				response = getConnectionType();
+				break;
+
+			case GET_ORIENTATION_READINGS:
+				response = getOrientationReadings();
 				break;
 
 			case SET_WIFI:
@@ -133,6 +138,25 @@ public class AgentRequestHandler
 		// 0 => battery, other => power source connected
 		Boolean returnValue = (state != 0);
 		return returnValue;
+	}
+
+	private float[] getOrientationReadings()
+	{
+		OrientationFetchingHelper helper = new OrientationFetchingHelper(context);
+		while (!helper.isReady())
+		{
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch (InterruptedException e)
+			{
+				// dont care
+			}
+		}
+		float[] orientation = helper.getOrientation();
+
+		return orientation;
 	}
 
 	private Integer getConnectionType()
