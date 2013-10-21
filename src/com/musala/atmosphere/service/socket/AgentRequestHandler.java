@@ -12,6 +12,7 @@ import com.musala.atmosphere.commons.ad.Request;
 import com.musala.atmosphere.commons.ad.RequestHandler;
 import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
+import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -69,6 +70,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 
 			case SET_WIFI:
 				response = setWiFi(arguments);
+				break;
+
+			case GET_ACCELERATION_READINGS:
+				response = getAcceleration();
 				break;
 
 			default:
@@ -156,6 +161,11 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 		return orientation;
 	}
 
+	/**
+	 * Gets the connection type of the device.
+	 * 
+	 * @return - connection type identifier.
+	 */
 	private Integer getConnectionType()
 	{
 		ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -187,5 +197,30 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 		wifiManager.setWifiEnabled(state);
 
 		return ServiceRequest.ANY_RESPONSE;
+	}
+
+	/**
+	 * Gets the acceleration of the device.
+	 * 
+	 * @return the acceleration of the device.
+	 */
+	private Object getAcceleration()
+	{
+		AccelerationEventListener accelerationListener = new AccelerationEventListener(context);
+		accelerationListener.register();
+
+		while (!accelerationListener.isMeasured())
+		{
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		return accelerationListener.getAcceleration();
 	}
 }
