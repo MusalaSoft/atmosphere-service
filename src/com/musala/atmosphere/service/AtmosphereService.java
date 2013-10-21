@@ -1,5 +1,7 @@
 package com.musala.atmosphere.service;
 
+import java.io.IOException;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -46,8 +48,15 @@ public class AtmosphereService extends Service
 		registerReceiver(serviceControlReceiver, ATMOSPHERE_SERVICEControlIntentFilter);
 
 		Context serviceContext = this.getApplicationContext();
-		serviceSocketServer = new ServiceSocketServer(serviceContext);
-		serviceSocketServer.execute();
+		try
+		{
+			serviceSocketServer = new ServiceSocketServer(serviceContext);
+			serviceSocketServer.execute();
+		}
+		catch (IOException e)
+		{
+			Log.wtf(ATMOSPHERE_SERVICE_TAG, "Failed to created a service socket server.", e);
+		}
 
 		Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICE_CREATE_INFO);
 	}

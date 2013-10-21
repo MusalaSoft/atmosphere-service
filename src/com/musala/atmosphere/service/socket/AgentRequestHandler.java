@@ -8,8 +8,9 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 
-import com.musala.atmosphere.commons.as.ServiceRequest;
-import com.musala.atmosphere.commons.as.ServiceRequestType;
+import com.musala.atmosphere.commons.ad.Request;
+import com.musala.atmosphere.commons.ad.RequestHandler;
+import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 
 /**
@@ -18,8 +19,9 @@ import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
  * @author yordan.petrov
  * 
  */
-public class AgentRequestHandler
+public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 {
+
 	/**
 	 * This will be returned when some Intent.getIntExtra() method fails to retrieve the required information.
 	 */
@@ -32,15 +34,10 @@ public class AgentRequestHandler
 		this.context = context;
 	}
 
-	/**
-	 * Handles requests and returns responses.
-	 * 
-	 * @param socketServerRequest
-	 * @return a response to the request.
-	 */
-	public Object handle(ServiceRequest socketServerRequest)
+	@Override
+	public Object handle(Request<ServiceRequest> socketServerRequest)
 	{
-		ServiceRequestType requestType = socketServerRequest.getType();
+		ServiceRequest requestType = socketServerRequest.getType();
 		Object[] arguments = socketServerRequest.getArguments();
 
 		Object response;
@@ -75,7 +72,7 @@ public class AgentRequestHandler
 				break;
 
 			default:
-				response = ServiceRequestType.ANY_RESPONSE;
+				response = ServiceRequest.ANY_RESPONSE;
 				break;
 		}
 
@@ -89,7 +86,7 @@ public class AgentRequestHandler
 	 */
 	private Object validate()
 	{
-		return ServiceRequestType.VALIDATION;
+		return ServiceRequest.VALIDATION;
 	}
 
 	/**
@@ -189,6 +186,6 @@ public class AgentRequestHandler
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		wifiManager.setWifiEnabled(state);
 
-		return ServiceRequestType.ANY_RESPONSE;
+		return ServiceRequest.ANY_RESPONSE;
 	}
 }
