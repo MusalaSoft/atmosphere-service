@@ -7,10 +7,18 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
+import android.telephony.TelephonyManager;
 
+import com.musala.atmosphere.commons.TelephonyInformation;
 import com.musala.atmosphere.commons.ad.Request;
 import com.musala.atmosphere.commons.ad.RequestHandler;
 import com.musala.atmosphere.commons.ad.service.ServiceRequest;
+import com.musala.atmosphere.commons.util.telephony.CallState;
+import com.musala.atmosphere.commons.util.telephony.DataActivity;
+import com.musala.atmosphere.commons.util.telephony.DataState;
+import com.musala.atmosphere.commons.util.telephony.NetworkType;
+import com.musala.atmosphere.commons.util.telephony.PhoneType;
+import com.musala.atmosphere.commons.util.telephony.SimState;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 
@@ -74,6 +82,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 
 			case GET_ACCELERATION_READINGS:
 				response = getAcceleration();
+				break;
+
+			case GET_TELEPHONY_INFORMATION:
+				response = getTelephonyInformation();
 				break;
 
 			default:
@@ -222,5 +234,62 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 		}
 
 		return accelerationListener.getAcceleration();
+	}
+
+	/**
+	 * Obtains information about the telephony services on the device.
+	 * 
+	 * @return {@link TelephonyInformation} instance.
+	 */
+	private Object getTelephonyInformation()
+	{
+		TelephonyInformation telephonyInformation = new TelephonyInformation();
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
+		int callStateId = telephonyManager.getCallState();
+		int dataActivityId = telephonyManager.getDataActivity();
+		int dataStateId = telephonyManager.getDataState();
+		int networkTypeId = telephonyManager.getNetworkType();
+		int phoneTypeId = telephonyManager.getPhoneType();
+		int simStateId = telephonyManager.getSimState();
+
+		String deviceId = telephonyManager.getDeviceId();
+		String deviceSoftwareVersion = telephonyManager.getDeviceSoftwareVersion();
+		String line1Number = telephonyManager.getLine1Number();
+		String networkCountryIso = telephonyManager.getNetworkCountryIso();
+		String networkOperator = telephonyManager.getNetworkOperator();
+		String networkOperatorName = telephonyManager.getNetworkOperatorName();
+		String simOperator = telephonyManager.getSimOperator();
+		String simOperatorName = telephonyManager.getSimOperatorName();
+		String subscriberId = telephonyManager.getSubscriberId();
+		String voiceMailAlphaTag = telephonyManager.getVoiceMailAlphaTag();
+		String voiceMailNumber = telephonyManager.getVoiceMailNumber();
+
+		CallState callState = CallState.getById(callStateId);
+		DataActivity dataActivity = DataActivity.getById(dataActivityId);
+		DataState dataState = DataState.getById(dataStateId);
+		NetworkType networkType = NetworkType.getById(networkTypeId);
+		PhoneType phoneType = PhoneType.getById(phoneTypeId);
+		SimState simState = SimState.getById(simStateId);
+
+		telephonyInformation.setCallState(callState);
+		telephonyInformation.setDataActivity(dataActivity);
+		telephonyInformation.setDataState(dataState);
+		telephonyInformation.setDeviceId(deviceId);
+		telephonyInformation.setDeviceSoftwareVersion(deviceSoftwareVersion);
+		telephonyInformation.setLine1Number(line1Number);
+		telephonyInformation.setNetworkCountryIso(networkCountryIso);
+		telephonyInformation.setNetworkOperator(networkOperator);
+		telephonyInformation.setNetworkOperatorName(networkOperatorName);
+		telephonyInformation.setNetworkType(networkType);
+		telephonyInformation.setPhoneType(phoneType);
+		telephonyInformation.setSimOperator(simOperator);
+		telephonyInformation.setSimOperatorName(simOperatorName);
+		telephonyInformation.setSimState(simState);
+		telephonyInformation.setSubscriberId(subscriberId);
+		telephonyInformation.setVoiceMailAlphaTag(voiceMailAlphaTag);
+		telephonyInformation.setVoiceMailNumber(voiceMailNumber);
+
+		return telephonyInformation;
 	}
 }
