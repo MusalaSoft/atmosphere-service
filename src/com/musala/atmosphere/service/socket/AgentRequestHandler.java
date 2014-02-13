@@ -9,10 +9,14 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.telephony.TelephonyManager;
 
+import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.TelephonyInformation;
 import com.musala.atmosphere.commons.ad.Request;
 import com.musala.atmosphere.commons.ad.RequestHandler;
 import com.musala.atmosphere.commons.ad.service.ServiceRequest;
+import com.musala.atmosphere.commons.beans.BatteryLevel;
+import com.musala.atmosphere.commons.beans.BatteryState;
+import com.musala.atmosphere.commons.beans.PowerSource;
 import com.musala.atmosphere.commons.util.telephony.CallState;
 import com.musala.atmosphere.commons.util.telephony.DataActivity;
 import com.musala.atmosphere.commons.util.telephony.DataState;
@@ -56,16 +60,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 				response = validate();
 				break;
 
-			case GET_BATTERY_STATE:
-				response = getBatteryState();
-				break;
-
-			case GET_BATTERY_LEVEL:
-				response = getBatteryLevel();
-				break;
-
-			case GET_POWER_STATE:
-				response = getPowerState();
+			case GET_POWER_PROPERTIES:
+				response = getPowerProperties();
 				break;
 
 			case GET_CONNECTION_TYPE:
@@ -107,51 +103,42 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest>
 	}
 
 	/**
-	 * Gets the battery state of the device.
+	 * Gets the power environment properties of the device.
 	 * 
-	 * @return - integer constant, representing the battery state of the device.
+	 * @return a {@llink PowerProperties} data container instance.
 	 */
-	private Integer getBatteryState()
+	private PowerProperties getPowerProperties()
 	{
+		PowerProperties properties = new PowerProperties();
+
 		IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-		Intent getBatteryStatusIntent = context.registerReceiver(null, intentFilter);
-		Integer status = getBatteryStatusIntent.getIntExtra(BatteryManager.EXTRA_STATUS, GET_INT_EXTRA_FAILED_VALUE);
+		Intent powerEnvironmentIntent = context.registerReceiver(null, intentFilter);
 
-		return status;
-	}
+		// battery state extraction
+		Integer status = powerEnvironmentIntent.getIntExtra(BatteryManager.EXTRA_STATUS, GET_INT_EXTRA_FAILED_VALUE);
+		if (status != GET_INT_EXTRA_FAILED_VALUE)
+		{
+			BatteryState currentBatteryState = BatteryState.getStateById(status);
+			properties.setBatteryState(currentBatteryState);
+		}
 
-	/**
-	 * Gets the battery level of the device.
-	 * 
-	 * @return - integer constant, representing the battery level of the device.
-	 */
-	private Integer getBatteryLevel()
-	{
-		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-		Intent batteryStatus = context.registerReceiver(null, filter);
-
-		int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, GET_INT_EXTRA_FAILED_VALUE);
-		int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, GET_INT_EXTRA_FAILED_VALUE);
-
+		// battery level extraction
+		int level = powerEnvironmentIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, GET_INT_EXTRA_FAILED_VALUE);
+		int scale = powerEnvironmentIntent.getIntExtra(BatteryManager.EXTRA_SCALE, GET_INT_EXTRA_FAILED_VALUE);
 		Integer batteryLevel = (100 * level) / scale;
-		return batteryLevel;
-	}
+		properties.setBatteryLevel(new BatteryLevel(batteryLevel));
 
-	/**
-	 * Gets the power state of the device.
-	 * 
-	 * @return - boolean constant, representing the power state of the device. True if the device is connected to power;
-	 *         false otherwise.
-	 */
-	private Boolean getPowerState()
-	{
-		IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-		Intent batteryStatus = context.registerReceiver(null, filter);
+		// power connected state extraction
+		int powerSourceInt = powerEnvironmentIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED,
+																GET_INT_EXTRA_FAILED_VALUE);
+		if (powerSourceInt != GET_INT_EXTRA_FAILED_VALUE)
+		{
+			// 0 => battery, other => power source connected
+			PowerSource source = PowerSource.getStateById(powerSourceInt);
+			properties.setPowerSource(source);
+		}
 
-		int state = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, GET_INT_EXTRA_FAILED_VALUE);
-		// 0 => battery, other => power source connected
-		Boolean returnValue = (state != 0);
-		return returnValue;
+		return properties;
 	}
 
 	private float[] getOrientationReadings()
