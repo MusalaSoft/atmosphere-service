@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AtmosphereService" default="help">
 
-
-
-
-    
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
@@ -90,12 +86,6 @@
          In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
          in order to avoid having your file be overridden by tools such as "android update project"
     -->
-    <!-- version-tag: custom -->
+    <!-- version-tag: 'custom' -->
     <import file="${sdk.dir}/tools/ant/build.xml" />
-    
-    <property name="dependency.projects" value="AtmosphereCommons,AtmosphereADCommons"/>
-    <property name="lib.dir" value="libs"/>
-    <import file="../common-build.xml"/>
-    <target name="release-mod" depends="copy-subprojects-jars,release" />
-
 </project>
