@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
+import android.os.PowerManager;
 import android.telephony.TelephonyManager;
 
 import com.musala.atmosphere.commons.PowerProperties;
@@ -85,12 +86,28 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 response = startApplication(arguments);
                 break;
 
+            case GET_AWAKE_STATUS:
+                response = isAwake();
+                break;
+
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
         }
 
         return response;
+    }
+
+    /**
+     * Checks if the device is awake.
+     * 
+     * @return <code>true</code> if the device is awake, and <code>false</code> otherwise
+     */
+    private boolean isAwake() {
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+
+        boolean isAwake = powerManager.isScreenOn();
+        return isAwake;
     }
 
     /**
