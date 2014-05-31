@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -88,6 +89,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
             case GET_AWAKE_STATUS:
                 response = isAwake();
+                break;
+
+            case GET_CAMERA_AVAILABILITY:
+                response = hasCamera();
                 break;
 
             default:
@@ -295,5 +300,14 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         telephonyInformation.setVoiceMailNumber(voiceMailNumber);
 
         return telephonyInformation;
+    }
+
+    /**
+     * Checks if physical cameras are available on this device.
+     * 
+     * @return true if physical cameras are available, else false
+     */
+    private boolean hasCamera() {
+        return Camera.getNumberOfCameras() > 0;
     }
 }
