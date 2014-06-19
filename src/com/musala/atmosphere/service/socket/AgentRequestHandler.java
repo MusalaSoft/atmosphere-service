@@ -1,5 +1,8 @@
 package com.musala.atmosphere.service.socket;
 
+import java.util.List;
+
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -95,6 +98,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 response = hasCamera();
                 break;
 
+            case GET_PROCESS_RUNNING:
+                response = isProcessRunning(arguments);
+                break;
+
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -173,7 +180,22 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             context.startActivity(appStartIntent);
             return true;
         }
+        return false;
+    }
 
+    /**
+     * Checks if there are any running processes on the device with the given package.
+     * 
+     * @return - true if there are running process with the given package and false otherwise.
+     */
+    private boolean isProcessRunning(Object[] args) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningProcesses = activityManager.getRunningAppProcesses();
+        String packageName = (String) args[0];
+        for (ActivityManager.RunningAppProcessInfo currentRunningProcess : runningProcesses) {
+            if (packageName.equals(currentRunningProcess.processName))
+                return true;
+        }
         return false;
     }
 
