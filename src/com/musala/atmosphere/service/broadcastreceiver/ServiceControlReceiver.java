@@ -13,21 +13,17 @@ import com.musala.atmosphere.service.AtmosphereService;
  * @author yordan.petrov
  * 
  */
-public class ServiceControlReceiver extends BroadcastReceiver
-{
-	@Override
-	public void onReceive(Context context, Intent intent)
-	{
-		Bundle intentExtras = intent.getExtras();
+public class ServiceControlReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Bundle intentExtras = intent.getExtras();
 
-		if (intentExtras.containsKey("command"))
-		{
-			String commandValue = intentExtras.getString("command");
-			if (commandValue.equals("stop"))
-			{
-				Intent atmosphereServiceIntent = new Intent(context, AtmosphereService.class);
-				context.stopService(atmosphereServiceIntent);
-			}
-		}
-	}
+        if (intentExtras.containsKey("command")) {
+            String commandValue = intentExtras.getString("command");
+            if (commandValue.equals("stop")) {
+                Intent atmosphereServiceIntent = new Intent(context, AtmosphereService.class);
+                context.stopService(atmosphereServiceIntent);
+            }
+        }
+    }
 }

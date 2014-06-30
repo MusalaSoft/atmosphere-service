@@ -13,51 +13,44 @@ import android.widget.Button;
  * @author yordan.petrov
  * 
  */
-public class MainActivity extends Activity
-{
-	private Button startServiceButton;
+public class MainActivity extends Activity {
+    private Button startServiceButton;
 
-	private Button stopServiceButton;
+    private Button stopServiceButton;
 
-	private Intent atmosphereServiceIntent;
+    private Intent atmosphereServiceIntent;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-		atmosphereServiceIntent = new Intent(this, AtmosphereService.class);
+        atmosphereServiceIntent = new Intent(this, AtmosphereService.class);
 
-		startServiceButton = (Button) findViewById(R.id.buttonStartService);
-		stopServiceButton = (Button) findViewById(R.id.buttonStopService);
+        startServiceButton = (Button) findViewById(R.id.buttonStartService);
+        stopServiceButton = (Button) findViewById(R.id.buttonStopService);
 
-		startServiceButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View view)
-			{
-				startService(atmosphereServiceIntent);
-			}
-		});
+        startServiceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startService(atmosphereServiceIntent);
+            }
+        });
 
-		stopServiceButton.setOnClickListener(new View.OnClickListener()
-		{
+        stopServiceButton.setOnClickListener(new View.OnClickListener() {
 
-			@Override
-			public void onClick(View view)
-			{
-				stopService(atmosphereServiceIntent);
-			}
-		});
-	}
+            @Override
+            public void onClick(View view) {
+                stopService(atmosphereServiceIntent);
+            }
+        });
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
 }
