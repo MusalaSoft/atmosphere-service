@@ -14,6 +14,7 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.TelephonyInformation;
@@ -23,6 +24,7 @@ import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.commons.beans.BatteryLevel;
 import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.PowerSource;
+import com.musala.atmosphere.commons.util.GeoLocation;
 import com.musala.atmosphere.commons.util.telephony.CallState;
 import com.musala.atmosphere.commons.util.telephony.DataActivity;
 import com.musala.atmosphere.commons.util.telephony.DataState;
@@ -30,6 +32,7 @@ import com.musala.atmosphere.commons.util.telephony.NetworkType;
 import com.musala.atmosphere.commons.util.telephony.PhoneType;
 import com.musala.atmosphere.commons.util.telephony.SimState;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
+import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 
 /**
@@ -47,8 +50,11 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     private Context context;
 
+    private LocationMockHandler locationProvider;
+
     public AgentRequestHandler(Context context) {
         this.context = context;
+        locationProvider = new LocationMockHandler(context);
     }
 
     @Override
@@ -102,12 +108,27 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 response = isProcessRunning(arguments);
                 break;
 
+            case MOCK_LOCATION:
+                response = mockLocation(arguments);
+                break;
+
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
         }
 
         return response;
+    }
+
+    /**
+     * Mocks the current location of the device with the one passed.
+     * 
+     * @param arguments
+     *        - a {@link GeoLocation} object that is the location to be mocked
+     * @return true if mocking was successful, and false otherwise
+     */
+    private boolean mockLocation(Object[] arguments) {
+            return locationProvider.mockLocation((GeoLocation) arguments[0]);
     }
 
     /**
@@ -134,7 +155,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     /**
      * Gets the power environment properties of the device.
      * 
-     * @return a {@llink PowerProperties} data container instance.
+     * @return a {@link PowerProperties} data container instance.
      */
     private PowerProperties getPowerProperties() {
         PowerProperties properties = new PowerProperties();
