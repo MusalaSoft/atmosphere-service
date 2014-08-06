@@ -8,7 +8,6 @@ import android.location.Criteria;
 import android.location.LocationManager;
 import android.provider.Settings;
 
-import com.google.android.gms.location.LocationClient;
 import com.musala.atmosphere.commons.util.GeoLocation;
 
 /**
@@ -35,7 +34,7 @@ public class LocationMockHandler {
      * context.
      * 
      * @param context
-     *        - a context for the {@link LocationClient location client} used to mock locations
+     *        - a context for the {@link LocationManager location manager} used to mock locations
      */
     public LocationMockHandler(Context context) {
         this.context = context;
