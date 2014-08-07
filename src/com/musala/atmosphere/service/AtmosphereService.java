@@ -9,7 +9,9 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.musala.atmosphere.commons.ad.service.ServiceConstants;
 import com.musala.atmosphere.service.broadcastreceiver.ServiceControlReceiver;
+import com.musala.atmosphere.service.socket.AgentRequestHandler;
 import com.musala.atmosphere.service.socket.ServiceSocketServer;
 
 /**
@@ -29,7 +31,9 @@ public class AtmosphereService extends Service {
 
     private ServiceControlReceiver serviceControlReceiver;
 
-    private ServiceSocketServer serviceSocketServer;
+    private static ServiceSocketServer serviceSocketServer;
+
+    private AgentRequestHandler agentRequestHandler;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,16 +44,19 @@ public class AtmosphereService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        IntentFilter ATMOSPHERE_SERVICEControlIntentFilter = new IntentFilter(ATMOSPHERE_SERVICE_CONTROL_INTENT);
+        IntentFilter controlIntentFilter = new IntentFilter(ATMOSPHERE_SERVICE_CONTROL_INTENT);
         serviceControlReceiver = new ServiceControlReceiver();
-        registerReceiver(serviceControlReceiver, ATMOSPHERE_SERVICEControlIntentFilter);
+        registerReceiver(serviceControlReceiver, controlIntentFilter);
 
         Context serviceContext = this.getApplicationContext();
+        agentRequestHandler = new AgentRequestHandler(serviceContext);
+
         try {
-            serviceSocketServer = new ServiceSocketServer(serviceContext);
-            serviceSocketServer.execute();
+            serviceSocketServer = new ServiceSocketServer(agentRequestHandler, ServiceConstants.SERVICE_PORT);
+            serviceSocketServer.start();
+            Log.i(ATMOSPHERE_SERVICE_TAG, "Service socket server started successfully.");
         } catch (IOException e) {
-            Log.wtf(ATMOSPHERE_SERVICE_TAG, "Failed to created a service socket server.", e);
+            Log.e(ATMOSPHERE_SERVICE_TAG, "Could not start ATMOSPHERE socket server", e);
         }
 
         Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICE_CREATE_INFO);
@@ -61,7 +68,9 @@ public class AtmosphereService extends Service {
 
         unregisterReceiver(serviceControlReceiver);
 
-        serviceSocketServer.cancel(true);
+        if (serviceSocketServer != null) {
+            serviceSocketServer.terminate();
+        }
 
         Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICEDESTROY_INFO);
     }
