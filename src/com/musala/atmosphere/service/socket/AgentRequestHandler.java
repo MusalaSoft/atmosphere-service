@@ -14,7 +14,6 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.TelephonyInformation;
@@ -34,6 +33,7 @@ import com.musala.atmosphere.commons.util.telephony.SimState;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
+import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -47,6 +47,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      * This will be returned when some Intent.getIntExtra() method fails to retrieve the required information.
      */
     private static final int GET_INT_EXTRA_FAILED_VALUE = -1;
+
+    private static final int PROXIMITY_MEASURED_TIMEOUT = 10;
 
     private Context context;
 
@@ -86,6 +88,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
             case GET_ACCELERATION_READINGS:
                 response = getAcceleration();
+                break;
+
+            case GET_PROXIMITY_READINGS:
+                response = getProximity();
                 break;
 
             case GET_TELEPHONY_INFORMATION:
@@ -128,7 +134,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      * @return true if mocking was successful, and false otherwise
      */
     private boolean mockLocation(Object[] arguments) {
-            return locationProvider.mockLocation((GeoLocation) arguments[0]);
+        return locationProvider.mockLocation((GeoLocation) arguments[0]);
     }
 
     /**
@@ -287,6 +293,26 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return accelerationListener.getAcceleration();
+    }
+
+    /**
+     * Gets the proximity of the device.
+     * 
+     * @return a float instance representing the proximity of the device
+     */
+    private Object getProximity() {
+        ProximityEventListener proximityListener = new ProximityEventListener(context);
+        proximityListener.register();
+
+        while (!proximityListener.isMeasured()) {
+            try {
+                Thread.sleep(PROXIMITY_MEASURED_TIMEOUT);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return proximityListener.getProximity();
     }
 
     /**
