@@ -1,8 +1,10 @@
 package com.musala.atmosphere.service.socket;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import android.app.ActivityManager;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -50,13 +52,18 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     private static final int PROXIMITY_MEASURED_TIMEOUT = 10;
 
-    private Context context;
+    private final Context context;
 
-    private LocationMockHandler locationProvider;
+    private final LocationMockHandler locationProvider;
+
+    KeyguardManager.KeyguardLock keyguardLock;
 
     public AgentRequestHandler(Context context) {
         this.context = context;
         locationProvider = new LocationMockHandler(context);
+
+        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardLock = keyguardManager.newKeyguardLock("AtmosphereKeyguardLock");
     }
 
     @Override
@@ -113,11 +120,18 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case GET_PROCESS_RUNNING:
                 response = isProcessRunning(arguments);
                 break;
-
-            case MOCK_LOCATION:
-                response = mockLocation(arguments);
+            case SET_KEYGUARD:
+                response = setKeyguard(arguments);
                 break;
-
+            case BRING_TASK_TO_FRONT:
+                response = bringTaskToFront(arguments);
+                break;
+            case GET_RUNNING_TASK_IDS:
+                response = getRunningTaskIds(arguments);
+                break;
+            case WAIT_FOR_TASKS_UPDATE:
+                response = waitForTasksUpdate(arguments);
+                break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -313,6 +327,121 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return proximityListener.getProximity();
+    }
+
+    /**
+     * Dismisses and re enables the keyguard of the device in order to Lock and Unlock it.
+     * 
+     * @param locked
+     *        - <code>true</code> if the keyguard should be re-enabled and <code>false</code> to dismiss it.
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information.
+     */
+    @SuppressWarnings("deprecation")
+    private Object setKeyguard(Object[] args) {
+        boolean keyguardState = (Boolean) args[0];
+
+        if (keyguardState) {
+            keyguardLock.reenableKeyguard();
+        } else {
+            keyguardLock.disableKeyguard();
+        }
+
+        return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Brings task to the foreground of the device.
+     * 
+     * @param arguments
+     *        - id of the task that is going to be brought to the foreground and timeout to wait for bringing the task
+     *        to the front.
+     * @return <code>true</code> if the given task is brought to front for the given timeout and <code>false</code>
+     *         otherwise.
+     */
+    private boolean bringTaskToFront(Object[] arguments) {
+
+        int taskId = (Integer) arguments[0];
+        int timeout = (Integer) arguments[1];
+        final int MOVE_TASK_TO_FRONT_TIMEOUT = 100;
+        final int RUNNING_TASKS_SIZE = 1;
+
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        for (int i = 0; i <= timeout; i += 100) {
+
+            int topTask = getRunningTaskIds(RUNNING_TASKS_SIZE)[0];
+            activityManager.moveTaskToFront(taskId, 0);
+            try {
+                Thread.sleep(MOVE_TASK_TO_FRONT_TIMEOUT);
+            } catch (InterruptedException e) {
+                // Nothing TODO here
+            }
+            if (topTask == taskId) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * Return an array of the tasks id that are currently running, with the most recent being first and older ones after
+     * in order.
+     * 
+     * @param arguments
+     *        - max number of tasks that should be returned.
+     * @return array containing the id of the tasks.
+     */
+    private int[] getRunningTaskIds(Object... arguments) {
+        int maxTasks = (Integer) arguments[0];
+
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> runningTasks = activityManager.getRunningTasks(maxTasks);
+
+        int[] runningTasksId = new int[maxTasks];
+        int index = 0;
+
+        for (ActivityManager.RunningTaskInfo runningTask : runningTasks) {
+
+            runningTasksId[index] = runningTask.id;
+            index++;
+        }
+
+        return runningTasksId;
+
+    }
+
+    /**
+     * Waits for the given task to be moved to the given position.
+     * 
+     * @param arguments
+     *        - taskId of the Task we want to wait for. Position in which the task should be moved to and timeout to
+     *        wait for updating the task.
+     * @return <code>true</code> if the task is moved to the given position and <code>false</code> otherwise or timeout
+     *         runs out.
+     */
+    private boolean waitForTasksUpdate(Object[] arguments) {
+
+        int taskId = (Integer) arguments[0];
+        int position = (Integer) arguments[1];
+        int timeout = (Integer) arguments[2];
+        int runningTasksSize = position + 1;
+        final int WAIT_FOR_TASK_UPDATE_TIMEOUT = 50;
+
+        for (int i = 0; i <= timeout; i += 50) {
+
+            try {
+                Thread.sleep(WAIT_FOR_TASK_UPDATE_TIMEOUT);
+            } catch (InterruptedException e) {
+                // Nothing TODO here
+            }
+            int taskOnPosition = getRunningTaskIds(runningTasksSize)[position];
+            if (taskOnPosition == taskId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
