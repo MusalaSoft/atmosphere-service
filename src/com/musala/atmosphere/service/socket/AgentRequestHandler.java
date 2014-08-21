@@ -525,9 +525,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     /**
      * Checks if physical cameras are available on this device.
      * 
-     * @return true if physical cameras are available, else false
+     * @return <code>true</code> if physical cameras are available, else <code>false</code>
      */
     private boolean hasCamera() {
-        return Camera.getNumberOfCameras() > 0;
+        return Camera.class != null && Camera.getNumberOfCameras() > 0;
     }
 }
