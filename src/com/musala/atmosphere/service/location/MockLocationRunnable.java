@@ -19,7 +19,7 @@ public class MockLocationRunnable implements Runnable {
 
     private LocationManager locationManager;
 
-    private boolean shouldViolateMocking = false;
+    private volatile boolean isMockLocationEnabled = true;
 
     /**
      * Creates a runnable that mocks the location sent by a provider in a given location manager.
@@ -37,7 +37,7 @@ public class MockLocationRunnable implements Runnable {
 
     @Override
     public void run() {
-        while (!shouldViolateMocking) {
+        while (isMockLocationEnabled) {
             String providerName = null;
             Location mockLocation = null;
 
@@ -64,8 +64,8 @@ public class MockLocationRunnable implements Runnable {
      * Stops sending fake locations in the location manager. If sending location data is in progress, it will be
      * completed before the runnable is terminated.
      */
-    public void terminate() {
-        shouldViolateMocking = false;
+    public synchronized void terminate() {
+        isMockLocationEnabled = false;
     }
 
     /**

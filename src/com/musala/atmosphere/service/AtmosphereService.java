@@ -6,11 +6,13 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.LocationManager;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.musala.atmosphere.commons.ad.service.ServiceConstants;
 import com.musala.atmosphere.service.broadcastreceiver.ServiceControlReceiver;
+import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.socket.AgentRequestHandler;
 import com.musala.atmosphere.service.socket.ServiceSocketServer;
 
@@ -35,6 +37,8 @@ public class AtmosphereService extends Service {
 
     private AgentRequestHandler agentRequestHandler;
 
+    private LocationMockHandler mockLocationHandler;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
@@ -49,7 +53,9 @@ public class AtmosphereService extends Service {
         registerReceiver(serviceControlReceiver, controlIntentFilter);
 
         Context serviceContext = this.getApplicationContext();
-        agentRequestHandler = new AgentRequestHandler(serviceContext);
+        LocationManager locationManager = (LocationManager) serviceContext.getSystemService(Context.LOCATION_SERVICE);
+        mockLocationHandler = new LocationMockHandler(locationManager, serviceContext.getContentResolver());
+        agentRequestHandler = new AgentRequestHandler(serviceContext, mockLocationHandler);
 
         try {
             serviceSocketServer = new ServiceSocketServer(agentRequestHandler, ServiceConstants.SERVICE_PORT);
@@ -71,6 +77,8 @@ public class AtmosphereService extends Service {
         if (serviceSocketServer != null) {
             serviceSocketServer.terminate();
         }
+
+        mockLocationHandler.disableAllMockProviders();
 
         Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICEDESTROY_INFO);
     }

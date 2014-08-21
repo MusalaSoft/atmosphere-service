@@ -1,7 +1,6 @@
 package com.musala.atmosphere.service.socket;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
@@ -58,9 +57,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     KeyguardManager.KeyguardLock keyguardLock;
 
-    public AgentRequestHandler(Context context) {
+    public AgentRequestHandler(Context context, LocationMockHandler locationProvider) {
         this.context = context;
-        locationProvider = new LocationMockHandler(context);
+        this.locationProvider = locationProvider;
 
         KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
         keyguardLock = keyguardManager.newKeyguardLock("AtmosphereKeyguardLock");
@@ -123,14 +122,25 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case SET_KEYGUARD:
                 response = setKeyguard(arguments);
                 break;
+
             case BRING_TASK_TO_FRONT:
                 response = bringTaskToFront(arguments);
                 break;
+
             case GET_RUNNING_TASK_IDS:
                 response = getRunningTaskIds(arguments);
                 break;
+
             case WAIT_FOR_TASKS_UPDATE:
                 response = waitForTasksUpdate(arguments);
+                break;
+
+            case MOCK_LOCATION:
+                response = mockLocation(arguments);
+                break;
+
+            case DISABLE_MOCK_LOCATION:
+                response = disalbeMockLocation(arguments);
                 break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -145,10 +155,22 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      * 
      * @param arguments
      *        - a {@link GeoLocation} object that is the location to be mocked
-     * @return true if mocking was successful, and false otherwise
+     * @return <code>true</code> if mocking was successful, and <code>false</code> otherwise
      */
     private boolean mockLocation(Object[] arguments) {
         return locationProvider.mockLocation((GeoLocation) arguments[0]);
+    }
+
+    /**
+     * Disables mocking location for the given provider.
+     * 
+     * @param arguments
+     *        - a {@link String} object that is the provider name
+     * @return {@link ServiceRequest#ANY_RESPONSE}
+     */
+    private Object disalbeMockLocation(Object[] arguments) {
+        locationProvider.disableMockLocation((String) arguments[0]);
+        return ServiceRequest.ANY_RESPONSE;
     }
 
     /**
