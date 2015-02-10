@@ -24,6 +24,7 @@ import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.commons.beans.BatteryLevel;
 import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.PowerSource;
+import com.musala.atmosphere.commons.util.AtmosphereIntent;
 import com.musala.atmosphere.commons.util.GeoLocation;
 import com.musala.atmosphere.commons.util.telephony.CallState;
 import com.musala.atmosphere.commons.util.telephony.DataActivity;
@@ -142,6 +143,11 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case DISABLE_MOCK_LOCATION:
                 response = disalbeMockLocation(arguments);
                 break;
+
+            case SEND_BROADCAST:
+                response = sendBroadcast(arguments);
+                break;
+
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -529,5 +535,26 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      */
     private boolean hasCamera() {
         return Camera.class != null && Camera.getNumberOfCameras() > 0;
+    }
+
+    /**
+     * Broadcast the given intent to all interested BroadcastReceivers.
+     * 
+     * @param args
+     *        - args[0] should contain the AtmoshereIntent object for the broadcast
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     * 
+     * @see {@link Context#sendBroadcast(Intent)}
+     */
+    private Object sendBroadcast(Object[] args) {
+        if (args != null && args.length > 0) {
+            Object intent = args[0];
+
+            if (intent != null && intent instanceof AtmosphereIntent) {
+                context.sendBroadcast(((AtmosphereIntent) intent).toIntent());
+            }
+        }
+
+        return ServiceRequest.ANY_RESPONSE;
     }
 }
