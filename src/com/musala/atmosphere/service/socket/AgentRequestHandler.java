@@ -419,7 +419,12 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      * @param arguments
      *        - max number of tasks that should be returned.
      * @return array containing the id of the tasks.
+     * 
+     * @deprecated Since LOLLIPOP, this method is no longer available. It will still return a small subset of its data:
+     *             at least the caller's own tasks, and possibly some other tasks such as home that are known to not be
+     *             sensitive.
      */
+    @Deprecated
     private int[] getRunningTaskIds(Object... arguments) {
         int maxTasks = (Integer) arguments[0];
 
@@ -447,7 +452,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      *        wait for updating the task.
      * @return <code>true</code> if the task is moved to the given position and <code>false</code> otherwise or timeout
      *         runs out.
+     * @deprecated Since LOLLIPOP, this method is no longer avaible.
      */
+    @Deprecated
     private boolean waitForTasksUpdate(Object[] arguments) {
 
         int taskId = (Integer) arguments[0];
