@@ -120,8 +120,13 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case GET_PROCESS_RUNNING:
                 response = isProcessRunning(arguments);
                 break;
+
             case SET_KEYGUARD:
                 response = setKeyguard(arguments);
+                break;
+
+            case IS_LOCKED:
+                response = isLocked();
                 break;
 
             case BRING_TASK_TO_FRONT:
@@ -375,6 +380,16 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Checks the lock state of the device.
+     * 
+     * @return <code>true</code> if the device is in locked state and <code>false</code> otherwise.
+     */
+    private boolean isLocked() {
+        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return keyguardManager.isKeyguardLocked();
     }
 
     /**

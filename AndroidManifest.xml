@@ -36,6 +36,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.musala.atmosphere.service.UnlockDeviceActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name="com.musala.atmosphere.service.AtmosphereService"
             android:process=".atmosphere_service"
