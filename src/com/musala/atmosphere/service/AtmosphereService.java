@@ -10,11 +10,12 @@ import android.location.LocationManager;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.musala.atmosphere.commons.ad.service.ServiceConstants;
+import com.musala.atmosphere.commons.ad.service.ConnectionConstants;
+import com.musala.atmosphere.commons.ad.service.ServiceRequest;
+import com.musala.atmosphere.commons.ad.socket.OnDeviceSocketServer;
 import com.musala.atmosphere.service.broadcastreceiver.ServiceControlReceiver;
 import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.socket.AgentRequestHandler;
-import com.musala.atmosphere.service.socket.ServiceSocketServer;
 
 /**
  * A service class designed to communicate with the agent and operate on the testing device.
@@ -33,7 +34,7 @@ public class AtmosphereService extends Service {
 
     private ServiceControlReceiver serviceControlReceiver;
 
-    private static ServiceSocketServer serviceSocketServer;
+    private static OnDeviceSocketServer<ServiceRequest> serviceSocketServer;
 
     private AgentRequestHandler agentRequestHandler;
 
@@ -58,7 +59,8 @@ public class AtmosphereService extends Service {
         agentRequestHandler = new AgentRequestHandler(serviceContext, mockLocationHandler);
 
         try {
-            serviceSocketServer = new ServiceSocketServer(agentRequestHandler, ServiceConstants.SERVICE_PORT);
+            serviceSocketServer = new OnDeviceSocketServer<ServiceRequest>(agentRequestHandler,
+                                                                           ConnectionConstants.SERVICE_PORT);
             serviceSocketServer.start();
             Log.i(ATMOSPHERE_SERVICE_TAG, "Service socket server started successfully.");
         } catch (IOException e) {
