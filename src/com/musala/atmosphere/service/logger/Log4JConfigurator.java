@@ -1,10 +1,8 @@
 package com.musala.atmosphere.service.logger;
 
-import java.io.File;
-
 import org.apache.log4j.Level;
 
-import android.os.Environment;
+import android.content.Context;
 import de.mindpipe.android.logging.log4j.LogConfigurator;
 
 /**
@@ -19,15 +17,17 @@ public class Log4JConfigurator {
 
     private static final String LOG_FILE = "service.log";
 
-    private static final String LOG_FILE_PATH = Environment.getExternalStorageDirectory() + File.separator + LOG_FILE;
-
     /**
      * Configures log4j to use an Android appender.
+     * 
+     * @param context
+     *        - the context of the application or service
      */
-    public static void configure() {
+    public static void configure(Context context) {
         final LogConfigurator logConfigurator = new LogConfigurator();
 
-        logConfigurator.setFileName(LOG_FILE_PATH);
+        String logfilePath = context.getFilesDir() + LOG_FILE;
+        logConfigurator.setFileName(logfilePath);
         logConfigurator.setRootLevel(Level.DEBUG);
         // Set log level of a specific logger
         logConfigurator.setLevel(LOGGER_NAME, Level.ERROR);

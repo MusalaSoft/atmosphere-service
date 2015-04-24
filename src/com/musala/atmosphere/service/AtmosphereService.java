@@ -26,9 +26,6 @@ import com.musala.atmosphere.service.socket.AgentRequestHandler;
  * 
  */
 public class AtmosphereService extends Service {
-    static {
-        Log4JConfigurator.configure();
-    }
 
     private static final Logger LOGGER = Logger.getLogger(AtmosphereService.class);
 
@@ -50,6 +47,8 @@ public class AtmosphereService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Log4JConfigurator.configure(getApplicationContext());
 
         IntentFilter controlIntentFilter = new IntentFilter(ATMOSPHERE_SERVICE_CONTROL_INTENT);
         serviceControlReceiver = new ServiceControlReceiver();
