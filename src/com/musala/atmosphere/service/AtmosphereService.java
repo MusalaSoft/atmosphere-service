@@ -2,19 +2,21 @@ package com.musala.atmosphere.service;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.musala.atmosphere.commons.ad.service.ConnectionConstants;
 import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.commons.ad.socket.OnDeviceSocketServer;
 import com.musala.atmosphere.service.broadcastreceiver.ServiceControlReceiver;
 import com.musala.atmosphere.service.location.LocationMockHandler;
+import com.musala.atmosphere.service.logger.Log4JConfigurator;
 import com.musala.atmosphere.service.socket.AgentRequestHandler;
 
 /**
@@ -24,11 +26,11 @@ import com.musala.atmosphere.service.socket.AgentRequestHandler;
  * 
  */
 public class AtmosphereService extends Service {
-    private final static String ATMOSPHERE_SERVICE_TAG = "AtmosphereService";
+    static {
+        Log4JConfigurator.configure();
+    }
 
-    private final static String ATMOSPHERE_SERVICE_CREATE_INFO = "Atmosphere service has been created.";
-
-    private final static String ATMOSPHERE_SERVICEDESTROY_INFO = "Atmosphere service has been destroyed.";
+    private static final Logger LOGGER = Logger.getLogger(AtmosphereService.class);
 
     private final static String ATMOSPHERE_SERVICE_CONTROL_INTENT = "com.musala.atmosphere.service.SERVICE_CONTROL";
 
@@ -62,12 +64,12 @@ public class AtmosphereService extends Service {
             serviceSocketServer = new OnDeviceSocketServer<ServiceRequest>(agentRequestHandler,
                                                                            ConnectionConstants.SERVICE_PORT);
             serviceSocketServer.start();
-            Log.i(ATMOSPHERE_SERVICE_TAG, "Service socket server started successfully.");
+            LOGGER.info("Service socket server started successfully.");
         } catch (IOException e) {
-            Log.e(ATMOSPHERE_SERVICE_TAG, "Could not start ATMOSPHERE socket server", e);
+            LOGGER.error("Could not start ATMOSPHERE socket server", e);
         }
 
-        Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICE_CREATE_INFO);
+        LOGGER.info("Atmosphere service has been created.");
     }
 
     @Override
@@ -82,7 +84,7 @@ public class AtmosphereService extends Service {
 
         mockLocationHandler.disableAllMockProviders();
 
-        Log.i(ATMOSPHERE_SERVICE_TAG, ATMOSPHERE_SERVICEDESTROY_INFO);
+        LOGGER.info("Atmosphere service has been destroyed.");
     }
 
     @Override
