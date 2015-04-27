@@ -3,6 +3,7 @@ package com.musala.atmosphere.service.socket;
 import java.util.List;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -51,6 +52,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     private static final int GET_INT_EXTRA_FAILED_VALUE = -1;
 
     private static final int PROXIMITY_MEASURED_TIMEOUT = 10;
+
+    private static final long BYTES_TO_MB = 1048576L;
 
     private final Context context;
 
@@ -119,6 +122,10 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
             case GET_PROCESS_RUNNING:
                 response = isProcessRunning(arguments);
+                break;
+
+            case GET_TOTAL_RAM:
+                response = getTotalRam();
                 break;
 
             case SET_KEYGUARD:
@@ -492,6 +499,18 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return false;
+    }
+
+    /**
+     * Gets the total RAM the device has.
+     *
+     * @return the total RAM of the device.
+     */
+    private int getTotalRam() {
+        MemoryInfo memoryInfo = new MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        activityManager.getMemoryInfo(memoryInfo);
+        return (int) (memoryInfo.totalMem / BYTES_TO_MB);
     }
 
     /**
