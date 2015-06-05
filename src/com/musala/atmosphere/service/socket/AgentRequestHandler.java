@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -158,6 +159,12 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
             case SEND_BROADCAST:
                 response = sendBroadcast(arguments);
+                break;
+            case OPEN_LOCATION_SETTINGS:
+                response = openLocationSettings();
+                break;
+            case IS_GPS_LOCATION_ENABLED:
+                response = isGpsLocationEnabled();
                 break;
 
             default:
@@ -576,6 +583,31 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      */
     private boolean hasCamera() {
         return Camera.class != null && Camera.getNumberOfCameras() > 0;
+    }
+
+    /**
+     * Opens the location settings activity.
+     * 
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     */
+    private Object openLocationSettings() {
+        Intent openLocationSettingsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        openLocationSettingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(openLocationSettingsIntent);
+
+        return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Check if the GPS location is enabled on this device.
+     * 
+     * @return <code>true</code> if the GPS location is enabled, <code>false</code> if it's disabled
+     */
+    private boolean isGpsLocationEnabled() {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     /**
