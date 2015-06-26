@@ -26,6 +26,7 @@ import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.commons.beans.BatteryLevel;
 import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.PowerSource;
+import com.musala.atmosphere.commons.geometry.Point;
 import com.musala.atmosphere.commons.util.AtmosphereIntent;
 import com.musala.atmosphere.commons.util.GeoLocation;
 import com.musala.atmosphere.commons.util.telephony.CallState;
@@ -34,8 +35,10 @@ import com.musala.atmosphere.commons.util.telephony.DataState;
 import com.musala.atmosphere.commons.util.telephony.NetworkType;
 import com.musala.atmosphere.commons.util.telephony.PhoneType;
 import com.musala.atmosphere.commons.util.telephony.SimState;
+import com.musala.atmosphere.service.LocationPointerService;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.location.LocationMockHandler;
+import com.musala.atmosphere.service.locationpointerview.LocationPointerConstants;
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
 
@@ -166,6 +169,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case IS_GPS_LOCATION_ENABLED:
                 response = isGpsLocationEnabled();
                 break;
+            case SHOW_TAP_LOCATION:
+                showTapLocation(arguments);
 
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -608,6 +613,21 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    /**
+     * Shows a tap location on the current device screen.
+     * 
+     * @param arguments
+     *        - the point where the tap will be placed
+     */
+    private void showTapLocation(Object[] arguments) {
+        Point tapPoint = (Point) arguments[0];
+
+        Intent intent = new Intent(context, LocationPointerService.class);
+        intent.putExtra(LocationPointerConstants.CENTER_POINT_INTENT_NAME.getValue(), tapPoint);
+
+        context.startService(intent);
     }
 
     /**
