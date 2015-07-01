@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -166,7 +167,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case IS_GPS_LOCATION_ENABLED:
                 response = isGpsLocationEnabled();
                 break;
-
+            case IS_AUDIO_PLAYING:
+                response = isAudioPlaying();
+                break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -518,6 +521,16 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         activityManager.getMemoryInfo(memoryInfo);
         return (int) (memoryInfo.totalMem / BYTES_TO_MB);
+    }
+
+    /**
+     * Checks if any audio is currently playing on the device.
+     * 
+     * @return <code>true</code> if any audio is playing, <code>false</code> otherwise.
+     */
+    private boolean isAudioPlaying() {
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        return manager.isMusicActive();
     }
 
     /**
