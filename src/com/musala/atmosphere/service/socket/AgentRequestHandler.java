@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -170,8 +171,11 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 response = isGpsLocationEnabled();
                 break;
             case SHOW_TAP_LOCATION:
-                showTapLocation(arguments);
-
+                response = showTapLocation(arguments);
+                break;
+            case IS_AUDIO_PLAYING:
+                response = isAudioPlaying();
+                break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -526,6 +530,16 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     }
 
     /**
+     * Checks if any audio is currently playing on the device.
+     * 
+     * @return <code>true</code> if any audio is playing, <code>false</code> otherwise.
+     */
+    private boolean isAudioPlaying() {
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        return manager.isMusicActive();
+    }
+
+    /**
      * Obtains information about the telephony services on the device.
      * 
      * @return {@link TelephonyInformation} instance.
@@ -620,14 +634,17 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      * 
      * @param arguments
      *        - the point where the tap will be placed
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
      */
-    private void showTapLocation(Object[] arguments) {
+    private Object showTapLocation(Object[] arguments) {
         Point tapPoint = (Point) arguments[0];
 
         Intent intent = new Intent(context, LocationPointerService.class);
         intent.putExtra(LocationPointerConstants.CENTER_POINT_INTENT_NAME.getValue(), tapPoint);
 
         context.startService(intent);
+
+        return ServiceRequest.ANY_RESPONSE;
     }
 
     /**
