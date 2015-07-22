@@ -176,6 +176,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case IS_AUDIO_PLAYING:
                 response = isAudioPlaying();
                 break;
+            case STOP_BACKGROUND_PROCESS:
+                stopBackgroundProcess(arguments);
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -641,8 +643,23 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
         Intent intent = new Intent(context, LocationPointerService.class);
         intent.putExtra(LocationPointerConstants.CENTER_POINT_INTENT_NAME.getValue(), tapPoint);
-
         context.startService(intent);
+
+        return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Stops all background processes associated with the given package.
+     * 
+     * @param arguments
+     *        - args[0] contains the given package name
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     */
+    private Object stopBackgroundProcess(Object[] arguments) {
+        String packageName = (String) arguments[0];
+
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        activityManager.killBackgroundProcesses(packageName);
 
         return ServiceRequest.ANY_RESPONSE;
     }
