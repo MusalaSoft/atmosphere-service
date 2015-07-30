@@ -1,6 +1,7 @@
 package com.musala.atmosphere.service.socket;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
@@ -15,9 +16,11 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.TelephonyInformation;
@@ -36,6 +39,7 @@ import com.musala.atmosphere.commons.util.telephony.DataState;
 import com.musala.atmosphere.commons.util.telephony.NetworkType;
 import com.musala.atmosphere.commons.util.telephony.PhoneType;
 import com.musala.atmosphere.commons.util.telephony.SimState;
+import com.musala.atmosphere.requestsender.HttpRequestSender;
 import com.musala.atmosphere.service.LocationPointerService;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.location.LocationMockHandler;
@@ -50,6 +54,9 @@ import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
  * 
  */
 public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
+    private static final String LOG_TAG = AgentRequestHandler.class.getSimpleName();
+
+    private static final String ATC_RETRIEVE_TOKEN_ENDPOINT = "http://10.0.3.119:8000/api/v1/token/";
 
     /**
      * This will be returned when some Intent.getIntExtra() method fails to retrieve the required information.
@@ -79,7 +86,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         ServiceRequest requestType = socketServerRequest.getType();
         Object[] arguments = socketServerRequest.getArguments();
 
-        Object response;
+        Object response = null;
         switch (requestType) {
             case VALIDATION:
                 response = validate();
@@ -164,20 +171,31 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case SEND_BROADCAST:
                 response = sendBroadcast(arguments);
                 break;
+
             case OPEN_LOCATION_SETTINGS:
                 response = openLocationSettings();
                 break;
+
             case IS_GPS_LOCATION_ENABLED:
                 response = isGpsLocationEnabled();
                 break;
+
             case SHOW_TAP_LOCATION:
                 response = showTapLocation(arguments);
                 break;
+
             case IS_AUDIO_PLAYING:
                 response = isAudioPlaying();
                 break;
+
             case STOP_BACKGROUND_PROCESS:
                 stopBackgroundProcess(arguments);
+                break;
+
+            case RETRIEVE_TOKEN:
+                response = retrieveToken();
+                break;
+
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -683,5 +701,28 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Retrieves token from the Augmented Traffic Control tool used for authentication before the Agent will be able to
+     * modify the network connection properties.
+     * 
+     * @return string in JSON format containing key value pairs - token, device ip address in the network, validity of
+     *         the token
+     */
+    private String retrieveToken() {
+        HttpRequestSender requestSender = new HttpRequestSender();
+        AsyncTask<String, String, String> requestTask = requestSender.execute(ATC_RETRIEVE_TOKEN_ENDPOINT);
+        String errorMessage = String.format("Retrieving token from %s failed.", ATC_RETRIEVE_TOKEN_ENDPOINT);
+
+        try {
+            return requestTask.get();
+        } catch (InterruptedException e) {
+            Log.e(LOG_TAG, errorMessage, e);
+        } catch (ExecutionException e) {
+            Log.e(LOG_TAG, errorMessage, e);
+        }
+
+        return null;
     }
 }
