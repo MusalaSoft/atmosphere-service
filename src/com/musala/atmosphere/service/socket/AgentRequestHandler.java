@@ -30,6 +30,7 @@ import com.musala.atmosphere.commons.ad.service.ServiceRequest;
 import com.musala.atmosphere.commons.beans.BatteryLevel;
 import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.PowerSource;
+import com.musala.atmosphere.commons.connectivity.WifiConnectionProperties;
 import com.musala.atmosphere.commons.geometry.Point;
 import com.musala.atmosphere.commons.util.AtmosphereIntent;
 import com.musala.atmosphere.commons.util.GeoLocation;
@@ -39,7 +40,9 @@ import com.musala.atmosphere.commons.util.telephony.DataState;
 import com.musala.atmosphere.commons.util.telephony.NetworkType;
 import com.musala.atmosphere.commons.util.telephony.PhoneType;
 import com.musala.atmosphere.commons.util.telephony.SimState;
-import com.musala.atmosphere.requestsender.HttpRequestSender;
+import com.musala.atmosphere.httprequest.HttpDeleteRequest;
+import com.musala.atmosphere.httprequest.HttpGetRequest;
+import com.musala.atmosphere.httprequest.HttpPostRequest;
 import com.musala.atmosphere.service.LocationPointerService;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.location.LocationMockHandler;
@@ -54,9 +57,11 @@ import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
  * 
  */
 public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
+    private static final String ATC_SHAPE_DEVICE_URL = "http://10.0.3.119:8000/api/v1/shape/";
+
     private static final String LOG_TAG = AgentRequestHandler.class.getSimpleName();
 
-    private static final String ATC_RETRIEVE_TOKEN_ENDPOINT = "http://10.0.3.119:8000/api/v1/token/";
+    private static final String ATC_RETRIEVE_TOKEN_URL = "http://10.0.3.119:8000/api/v1/token/";
 
     /**
      * This will be returned when some Intent.getIntExtra() method fails to retrieve the required information.
@@ -196,6 +201,13 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 response = retrieveToken();
                 break;
 
+            case SHAPE_DEVICE:
+                response = shapeDevice(arguments);
+                break;
+
+            case UNSHAPE_DEVICE:
+                response = unshapeDevice();
+                break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
                 break;
@@ -711,9 +723,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      *         the token
      */
     private String retrieveToken() {
-        HttpRequestSender requestSender = new HttpRequestSender();
-        AsyncTask<String, String, String> requestTask = requestSender.execute(ATC_RETRIEVE_TOKEN_ENDPOINT);
-        String errorMessage = String.format("Retrieving token from %s failed.", ATC_RETRIEVE_TOKEN_ENDPOINT);
+        HttpGetRequest requestSender = new HttpGetRequest();
+        AsyncTask<String, String, String> requestTask = requestSender.execute(ATC_RETRIEVE_TOKEN_URL);
+        String errorMessage = String.format("Retrieving token from %s failed.", ATC_RETRIEVE_TOKEN_URL);
 
         try {
             return requestTask.get();
@@ -724,5 +736,37 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return null;
+    }
+
+    /**
+     * Sends POST request to the Augmented Traffic Control tool with the new connection properties.
+     * 
+     * @param arguments
+     *        - contains {@link WifiConnectionProperties information} about the WiFi connection properties to be set
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     */
+    private Object shapeDevice(Object[] arguments) {
+        // TODO: Think of a suitable response that can be sent to the Client. It will be useful mostly in case of
+        // failure.
+        HttpPostRequest requestSender = new HttpPostRequest();
+        WifiConnectionProperties connectionProperties = (WifiConnectionProperties) arguments[0];
+        String[] params = {ATC_SHAPE_DEVICE_URL, connectionProperties.serialize()};
+        requestSender.execute(params);
+
+        return ServiceRequest.ANY_RESPONSE;
+    }
+
+    /**
+     * Sends DELETE request to the Augmented Traffic Control tool for restoring connection properties.
+     * 
+     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     */
+    private Object unshapeDevice() {
+        // TODO: Think of a suitable response that can be sent to the Client. It will be useful mostly in case of
+        // failure.
+        HttpDeleteRequest requestSender = new HttpDeleteRequest();
+        requestSender.execute(ATC_SHAPE_DEVICE_URL);
+
+        return ServiceRequest.ANY_RESPONSE;
     }
 }
