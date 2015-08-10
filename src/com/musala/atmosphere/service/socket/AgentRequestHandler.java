@@ -52,9 +52,9 @@ import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
 
 /**
  * Class that handles request from the agent and responds to them.
- * 
+ *
  * @author yordan.petrov
- * 
+ *
  */
 public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     private static final String ATC_SHAPE_DEVICE_URL = "http://10.0.3.119:8000/api/v1/shape/";
@@ -218,7 +218,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Mocks the current location of the device with the one passed.
-     * 
+     *
      * @param arguments
      *        - a {@link GeoLocation} object that is the location to be mocked
      * @return <code>true</code> if mocking was successful, and <code>false</code> otherwise
@@ -229,7 +229,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Disables mocking location for the given provider.
-     * 
+     *
      * @param arguments
      *        - a {@link String} object that is the provider name
      * @return {@link ServiceRequest#ANY_RESPONSE}
@@ -241,7 +241,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Checks if the device is awake.
-     * 
+     *
      * @return <code>true</code> if the device is awake, and <code>false</code> otherwise
      */
     private boolean isAwake() {
@@ -253,7 +253,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Returns response to a validation request.
-     * 
+     *
      * @return validation response.
      */
     private Object validate() {
@@ -262,7 +262,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Gets the power environment properties of the device.
-     * 
+     *
      * @return a {@link PowerProperties} data container instance.
      */
     private PowerProperties getPowerProperties() {
@@ -314,7 +314,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Checks if there are any running processes on the device with the given package.
-     * 
+     *
      * @return - true if there are running process with the given package and false otherwise.
      */
     private boolean isProcessRunning(Object[] args) {
@@ -322,8 +322,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         List<ActivityManager.RunningAppProcessInfo> runningProcesses = activityManager.getRunningAppProcesses();
         String packageName = (String) args[0];
         for (ActivityManager.RunningAppProcessInfo currentRunningProcess : runningProcesses) {
-            if (packageName.equals(currentRunningProcess.processName))
+            if (packageName.equals(currentRunningProcess.processName)) {
                 return true;
+            }
         }
         return false;
     }
@@ -344,7 +345,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Gets the connection type of the device.
-     * 
+     *
      * @return - connection type identifier.
      */
     private Integer getConnectionType() {
@@ -363,7 +364,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Turns on the WiFi of the device.
-     * 
+     *
      * @param state
      *        true if the WiFi should be on; false if it should be off.
      * @return a fake response, since we are not requesting any information.
@@ -379,7 +380,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Gets the acceleration of the device.
-     * 
+     *
      * @return the acceleration of the device.
      */
     private Object getAcceleration() {
@@ -399,7 +400,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Gets the proximity of the device.
-     * 
+     *
      * @return a float instance representing the proximity of the device
      */
     private Object getProximity() {
@@ -419,7 +420,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Dismisses and re enables the keyguard of the device in order to Lock and Unlock it.
-     * 
+     *
      * @param locked
      *        - <code>true</code> if the keyguard should be re-enabled and <code>false</code> to dismiss it.
      * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information.
@@ -439,7 +440,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Checks the lock state of the device.
-     * 
+     *
      * @return <code>true</code> if the device is in locked state and <code>false</code> otherwise.
      */
     private boolean isLocked() {
@@ -449,7 +450,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Brings task to the foreground of the device.
-     * 
+     *
      * @param arguments
      *        - id of the task that is going to be brought to the foreground and timeout to wait for bringing the task
      *        to the front.
@@ -485,11 +486,11 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     /**
      * Return an array of the tasks id that are currently running, with the most recent being first and older ones after
      * in order.
-     * 
+     *
      * @param arguments
      *        - max number of tasks that should be returned.
      * @return array containing the id of the tasks.
-     * 
+     *
      * @deprecated Since LOLLIPOP, this method is no longer available. It will still return a small subset of its data:
      *             at least the caller's own tasks, and possibly some other tasks such as home that are known to not be
      *             sensitive.
@@ -516,7 +517,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Waits for the given task to be moved to the given position.
-     * 
+     *
      * @param arguments
      *        - taskId of the Task we want to wait for. Position in which the task should be moved to and timeout to
      *        wait for updating the task.
@@ -563,7 +564,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Checks if any audio is currently playing on the device.
-     * 
+     *
      * @return <code>true</code> if any audio is playing, <code>false</code> otherwise.
      */
     private boolean isAudioPlaying() {
@@ -573,7 +574,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Obtains information about the telephony services on the device.
-     * 
+     *
      * @return {@link TelephonyInformation} instance.
      */
     private Object getTelephonyInformation() {
@@ -629,7 +630,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Checks if physical cameras are available on this device.
-     * 
+     *
      * @return <code>true</code> if physical cameras are available, else <code>false</code>
      */
     private boolean hasCamera() {
@@ -638,7 +639,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Opens the location settings activity.
-     * 
+     *
      * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
      */
     private Object openLocationSettings() {
@@ -652,7 +653,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Check if the GPS location is enabled on this device.
-     * 
+     *
      * @return <code>true</code> if the GPS location is enabled, <code>false</code> if it's disabled
      */
     private boolean isGpsLocationEnabled() {
@@ -663,7 +664,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Shows a tap location on the current device screen.
-     * 
+     *
      * @param arguments
      *        - the point where the tap will be placed
      * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
@@ -680,7 +681,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Stops all background processes associated with the given package.
-     * 
+     *
      * @param arguments
      *        - args[0] contains the given package name
      * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
@@ -690,17 +691,16 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         activityManager.killBackgroundProcesses(packageName);
-
         return ServiceRequest.ANY_RESPONSE;
     }
 
     /**
      * Broadcast the given intent to all interested BroadcastReceivers.
-     * 
+     *
      * @param args
      *        - args[0] should contain the AtmoshereIntent object for the broadcast
      * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
-     * 
+     *
      * @see {@link Context#sendBroadcast(Intent)}
      */
     private Object sendBroadcast(Object[] args) {
@@ -718,7 +718,7 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
     /**
      * Retrieves token from the Augmented Traffic Control tool used for authentication before the Agent will be able to
      * modify the network connection properties.
-     * 
+     *
      * @return string in JSON format containing key value pairs - token, device ip address in the network, validity of
      *         the token
      */
@@ -740,33 +740,43 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Sends POST request to the Augmented Traffic Control tool with the new connection properties.
-     * 
+     *
      * @param arguments
      *        - contains {@link WifiConnectionProperties information} about the WiFi connection properties to be set
-     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     * @return <code>true</code> if the request is successful, <code>false</code> otherwise
      */
-    private Object shapeDevice(Object[] arguments) {
-        // TODO: Think of a suitable response that can be sent to the Client. It will be useful mostly in case of
-        // failure.
+    private Boolean shapeDevice(Object[] arguments) {
+
         HttpPostRequest requestSender = new HttpPostRequest();
         WifiConnectionProperties connectionProperties = (WifiConnectionProperties) arguments[0];
         String[] params = {ATC_SHAPE_DEVICE_URL, connectionProperties.serialize()};
-        requestSender.execute(params);
 
-        return ServiceRequest.ANY_RESPONSE;
+        try {
+            return requestSender.execute(params).get();
+        } catch (InterruptedException e) {
+            Log.e(LOG_TAG, "Modifying wifi connection properties for the device failed.", e);
+            return false;
+        } catch (ExecutionException e) {
+            Log.e(LOG_TAG, "Modifying wifi connection properties for the device failed.", e);
+            return false;
+        }
     }
 
     /**
      * Sends DELETE request to the Augmented Traffic Control tool for restoring connection properties.
-     * 
-     * @return a {@link ServiceRequest#ANY_RESPONSE}, since we are not requesting any information
+     *
+     * <code>true</code> if the request is successful, <code>false</code> otherwise
      */
-    private Object unshapeDevice() {
-        // TODO: Think of a suitable response that can be sent to the Client. It will be useful mostly in case of
-        // failure.
+    private Boolean unshapeDevice() {
         HttpDeleteRequest requestSender = new HttpDeleteRequest();
-        requestSender.execute(ATC_SHAPE_DEVICE_URL);
-
-        return ServiceRequest.ANY_RESPONSE;
+        try {
+            return requestSender.execute(ATC_SHAPE_DEVICE_URL).get();
+        } catch (InterruptedException e) {
+            Log.e(LOG_TAG, "Restoring wifi connection properties for device %s failed.", e);
+            return false;
+        } catch (ExecutionException e) {
+            Log.e(LOG_TAG, "Restoring wifi connection properties for device %s failed.", e);
+            return false;
+        }
     }
 }
