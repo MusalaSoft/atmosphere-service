@@ -1,26 +1,9 @@
 package com.musala.atmosphere.service.socket;
 
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.MemoryInfo;
-import android.app.KeyguardManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
-import android.location.LocationManager;
-import android.media.AudioManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
-import android.os.BatteryManager;
-import android.os.PowerManager;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.TelephonyInformation;
@@ -49,6 +32,27 @@ import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.locationpointerview.LocationPointerConstants;
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
+
+import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
+import android.app.KeyguardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.location.LocationManager;
+import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
+import android.os.BatteryManager;
+import android.os.Environment;
+import android.os.PowerManager;
+import android.os.StatFs;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -207,6 +211,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
             case UNSHAPE_DEVICE:
                 response = unshapeDevice();
+                break;
+            case SHOW_AVAILABLE_DISK_SPACE:
+                response = showAvailableDiskSpace();
                 break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -778,5 +785,23 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             Log.e(LOG_TAG, "Restoring wifi connection properties for device %s failed.", e);
             return false;
         }
+    }
+
+    /**
+     * Gets the device's free disk space.
+     * 
+     * @return device's free disk space in gigabytes
+     */
+    private Double showAvailableDiskSpace() {
+        File path = Environment.getDataDirectory();
+        StatFs stat = new StatFs(path.getPath());
+        long blockSize = stat.getBlockSize();
+        long availableBlocks = stat.getAvailableBlocks();
+
+        // Dividing the free space in bytes by the third power of 1024 in order to represent it in gigabytes
+        Double freeSpace = (Double) ((blockSize * availableBlocks) / (Math.pow(1024, 3)));
+        DecimalFormat decimalFormated = new DecimalFormat("#.##");
+
+        return Double.valueOf(decimalFormated.format(freeSpace));
     }
 }
