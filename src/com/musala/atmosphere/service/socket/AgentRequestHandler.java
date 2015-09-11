@@ -1,7 +1,5 @@
 package com.musala.atmosphere.service.socket;
 
-import java.io.File;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -27,6 +25,8 @@ import com.musala.atmosphere.httprequest.HttpDeleteRequest;
 import com.musala.atmosphere.httprequest.HttpGetRequest;
 import com.musala.atmosphere.httprequest.HttpPostRequest;
 import com.musala.atmosphere.service.LocationPointerService;
+import com.musala.atmosphere.service.disk.FileSystemStat;
+import com.musala.atmosphere.service.disk.FileSystemStatFactory;
 import com.musala.atmosphere.service.helpers.OrientationFetchingHelper;
 import com.musala.atmosphere.service.location.LocationMockHandler;
 import com.musala.atmosphere.service.locationpointerview.LocationPointerConstants;
@@ -212,8 +212,8 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
             case UNSHAPE_DEVICE:
                 response = unshapeDevice();
                 break;
-            case SHOW_AVAILABLE_DISK_SPACE:
-                response = showAvailableDiskSpace();
+            case GET_AVAILABLE_DISK_SPACE:
+                response = getAvailableDiskSpace();
                 break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -789,19 +789,16 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     /**
      * Gets the device's free disk space.
-     * 
-     * @return device's free disk space in gigabytes
+     *
+     * @return device's free disk space in megabytes
      */
-    private Double showAvailableDiskSpace() {
-        File path = Environment.getDataDirectory();
-        StatFs stat = new StatFs(path.getPath());
-        long blockSize = stat.getBlockSize();
-        long availableBlocks = stat.getAvailableBlocks();
+    private Long getAvailableDiskSpace() {
+        String path = Environment.getDataDirectory().getPath();
+        FileSystemStat fsStat = FileSystemStatFactory.getFileSystemStat(new StatFs(path));
+        long blockSize = fsStat.getBlockSize();
+        long availableBlocks = fsStat.getAvailableBlocks();
 
-        // Dividing the free space in bytes by the third power of 1024 in order to represent it in gigabytes
-        Double freeSpace = (Double) ((blockSize * availableBlocks) / (Math.pow(1024, 3)));
-        DecimalFormat decimalFormated = new DecimalFormat("#.##");
-
-        return Double.valueOf(decimalFormated.format(freeSpace));
+        // Dividing the free space in bytes by the second power of 1024 in order to represent it in megabytes
+        return (blockSize * availableBlocks) / (1024 * 1024);
     }
 }
