@@ -33,6 +33,7 @@ import com.musala.atmosphere.service.locationpointerview.LocationPointerConstant
 import com.musala.atmosphere.service.sensoreventlistener.AccelerationEventListener;
 import com.musala.atmosphere.service.sensoreventlistener.ProximityEventListener;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.KeyguardManager;
@@ -41,17 +42,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.StatFs;
+import android.provider.Settings;
+import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -663,10 +667,26 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
      *
      * @return <code>true</code> if the GPS location is enabled, <code>false</code> if it's disabled
      */
+    @SuppressWarnings("deprecation")
+    @SuppressLint("InlinedApi")
     private boolean isGpsLocationEnabled() {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        int locationMode = 0;
 
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (SettingNotFoundException e) {
+                Log.e(LOG_TAG, "LocationMode option is not set.", e);
+            }
+
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else {
+            String locationProviders;
+
+            locationProviders = Settings.Secure.getString(context.getContentResolver(),
+                                                          Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
     }
 
     /**
