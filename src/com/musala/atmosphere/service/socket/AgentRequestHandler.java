@@ -1,5 +1,6 @@
 package com.musala.atmosphere.service.socket;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -65,9 +66,12 @@ import android.util.Log;
  *
  */
 public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
-    private static final String ATC_SHAPE_DEVICE_URL = "http://10.0.3.119:8000/api/v1/shape/";
 
     private static final String LOG_TAG = AgentRequestHandler.class.getSimpleName();
+
+    private static final String EXTERNAL_STORAGE_ENV_KEY = "ENV_EXTERNAL_STORAGE";
+
+    private static final String ATC_SHAPE_DEVICE_URL = "http://10.0.3.119:8000/api/v1/shape/";
 
     private static final String ATC_RETRIEVE_TOKEN_URL = "http://10.0.3.119:8000/api/v1/token/";
 
@@ -218,6 +222,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 break;
             case GET_AVAILABLE_DISK_SPACE:
                 response = getAvailableDiskSpace();
+                break;
+            case GET_EXTERNAL_STORAGE:
+                response = getExternalStoragePath();
                 break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -820,5 +827,32 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
         // Dividing the free space in bytes by the second power of 1024 in order to represent it in megabytes
         return (blockSize * availableBlocks) / (1024 * 1024);
+    }
+
+    /**
+     * Gets the external storage absolute path which is set in the system environment.
+     *
+     * @return the external storage absolute path or <code>null</code> if a system property with the requested key is
+     *         not set
+     */
+    private String getExternalStoragePath() {
+        String externalStorageState = Environment.getExternalStorageState();
+        String externalStorageKey = null;
+
+        if (!Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
+            return null;
+        }
+
+        try {
+            Field externalStorageKeyField = Environment.class.getDeclaredField(EXTERNAL_STORAGE_ENV_KEY);
+            externalStorageKeyField.setAccessible(true);
+            externalStorageKey = (String) externalStorageKeyField.get(null);
+        } catch (NoSuchFieldException e) {
+            Log.e(LOG_TAG, "External storage path might be set with different key in the system environment.", e);
+        } catch (IllegalAccessException e) {
+            Log.e(LOG_TAG, "Access to the external storage system propety is not allowed.", e);
+        }
+
+        return externalStorageKey != null ? System.getenv(externalStorageKey) : null;
     }
 }
