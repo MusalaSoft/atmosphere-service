@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="AtmosphereServicePreparation" default="help">
-    <property name="dependency.projects" value="AtmosphereCommons,AtmosphereADCommons"/>
-    <property name="lib.dir" value="libs"/>
-    <import file="../common-build.xml"/>
-    <target name="prepare-subprojects" depends="copy-subprojects-jars" />
-</project>
