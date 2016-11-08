@@ -1,3 +1,5 @@
+See our site for better context of this readme. [Click here](http://atmosphereframework.com/)
+
 # atmosphere-service
 This is the basic on-device component of the ATMOSPHERE framework. It provides a socket connection between the Agent and the Device and some additional classes and services for obtaining and manipulating information about the device state, e.g. free storage space, sensor information and location.
 
