@@ -7,12 +7,12 @@ This is the basic on-device component of the ATMOSPHERE framework. It provides a
 
 ### Setup Android SDK
 [Here](https://github.com/MusalaSoft/atmosphere-docs/blob/master/setup/android_sdk.md) you may read how to setup Android SDK. To build this project you will need:
- * `SDK Build-tools` `23.0.3`
- * `SDK Platform` for `Android 4.4.2 (API 19)`
+* `SDK Build-tools` `25.0.0`
+* `SDK Platform` for `Android 7.1.1 (API 25)`
 
 ### Build the project
 You can build the project using the included Gradle wrapper by running:
-* `./gradlew build` on Linux/macOS<br/>
+* `./gradlew build` on Linux/macOS
 * `gradlew build` on Windows
 
 ### Making changes
