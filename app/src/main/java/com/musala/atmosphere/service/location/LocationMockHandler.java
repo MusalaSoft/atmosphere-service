@@ -1,16 +1,19 @@
 package com.musala.atmosphere.service.location;
 
+import android.app.AppOpsManager;
+import android.content.Context;
+import android.location.Criteria;
+import android.location.LocationManager;
+import android.os.Build;
+import android.provider.Settings;
+
+import com.musala.atmosphere.commons.util.GeoLocation;
+import com.musala.atmosphere.service.BuildConfig;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import android.content.ContentResolver;
-import android.location.Criteria;
-import android.location.LocationManager;
-import android.provider.Settings;
-
-import com.musala.atmosphere.commons.util.GeoLocation;
 
 /**
  * A location provider class used to mock locations on the device.
@@ -21,11 +24,11 @@ import com.musala.atmosphere.commons.util.GeoLocation;
 public class LocationMockHandler {
     private static final long MOCK_TIMEOUT = 5000;
 
-    private static final String DISABLED_MOCK_LOCATION_VALUE = "0";
+    private static final String ENABLED_MOCK_LOCATION_VALUE = "1";
 
     private LocationManager locationManager;
 
-    private ContentResolver contentResolver;
+    private Context context;
 
     private Map<String, Thread> providerMockThreads;
 
@@ -37,9 +40,9 @@ public class LocationMockHandler {
      * @param locationManager
      *        - the location manager used to mock locations on test providers
      */
-    public LocationMockHandler(LocationManager locationManager, ContentResolver contentResolver) {
+    public LocationMockHandler(LocationManager locationManager, Context context) {
         this.locationManager = locationManager;
-        this.contentResolver = contentResolver;
+        this.context = context;
         providerMockThreads = new HashMap<String, Thread>();
         providerRunnables = new HashMap<String, MockLocationRunnable>();
     }
@@ -52,9 +55,7 @@ public class LocationMockHandler {
      * @return <code>true</code> if mocking was successful, and <code>false</code> otherwise
      */
     public boolean mockLocation(GeoLocation location) {
-        String mockLocationSettingValue = Settings.Secure.getString(contentResolver,
-                                                                    Settings.Secure.ALLOW_MOCK_LOCATION);
-        if (mockLocationSettingValue.equals(DISABLED_MOCK_LOCATION_VALUE)) {
+        if (!isMockLocationEnabled()) {
             return false;
         }
 
@@ -63,6 +64,23 @@ public class LocationMockHandler {
         startMockThread(location);
 
         return true;
+    }
+
+    private boolean isMockLocationEnabled() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                AppOpsManager opsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+                return (opsManager.checkOp(AppOpsManager.OPSTR_MOCK_LOCATION,
+                        android.os.Process.myUid(),
+                        BuildConfig.APPLICATION_ID)
+                        == AppOpsManager.MODE_ALLOWED);
+            } else {
+                String mockLocationSettingValue = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ALLOW_MOCK_LOCATION);
+                return (mockLocationSettingValue.equals(ENABLED_MOCK_LOCATION_VALUE));
+            }
+        } catch (SecurityException e) {
+            return false;
+        }
     }
 
     /**

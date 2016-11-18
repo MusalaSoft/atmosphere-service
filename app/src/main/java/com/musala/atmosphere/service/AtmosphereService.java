@@ -56,7 +56,7 @@ public class AtmosphereService extends Service {
 
         Context serviceContext = this.getApplicationContext();
         LocationManager locationManager = (LocationManager) serviceContext.getSystemService(Context.LOCATION_SERVICE);
-        mockLocationHandler = new LocationMockHandler(locationManager, serviceContext.getContentResolver());
+        mockLocationHandler = new LocationMockHandler(locationManager, serviceContext);
         agentRequestHandler = new AgentRequestHandler(serviceContext, mockLocationHandler);
 
         try {
