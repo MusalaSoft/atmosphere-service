@@ -50,7 +50,12 @@ public class MockLocationRunnable implements Runnable {
             mockLocation.setTime(System.currentTimeMillis());
             mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
 
-            locationManager.setTestProviderLocation(providerName, mockLocation);
+            try {
+                locationManager.setTestProviderLocation(providerName, mockLocation);
+            } catch (SecurityException e) {
+                // the permission to mock the location was revoked, so stop mocking
+                terminate();
+            }
 
             try {
                 Thread.sleep(mockTimeout);
