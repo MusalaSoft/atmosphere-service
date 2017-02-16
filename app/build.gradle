@@ -44,7 +44,7 @@ version = '0.0.2'
 
 dependencies {
     compile 'de.mindpipe.android:android-logging-log4j:1.0.3'
-    compile ('com.musala.atmosphere:atmosphere-agent-device-lib:0.0.1') {
+    compile ('com.musala.atmosphere:atmosphere-agent-device-lib:0.+') {
         exclude module: 'framework-api19'
     }
 }
@@ -65,4 +65,20 @@ publishing {
     repositories {
         mavenLocal()
     }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    failOnError false
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
