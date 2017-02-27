@@ -51,6 +51,8 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.StatFs;
 import android.provider.Settings;
@@ -58,6 +60,7 @@ import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Class that handles request from the agent and responds to them.
@@ -68,6 +71,8 @@ import android.util.Log;
 public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
 
     private static final String LOG_TAG = AgentRequestHandler.class.getSimpleName();
+
+    private static final String FRAMEWORK_NAME_PREFIX = "ATMOSPHERE: ";
 
     private static final String EXTERNAL_STORAGE_ENV_KEY = "ENV_EXTERNAL_STORAGE";
 
@@ -225,6 +230,9 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
                 break;
             case GET_EXTERNAL_STORAGE:
                 response = getExternalStoragePath();
+                break;
+            case SHOW_TOAST:
+                showToast(arguments);
                 break;
             default:
                 response = ServiceRequest.ANY_RESPONSE;
@@ -854,5 +862,20 @@ public class AgentRequestHandler implements RequestHandler<ServiceRequest> {
         }
 
         return externalStorageKey != null ? System.getenv(externalStorageKey) : null;
+    }
+
+    /**
+     * Shows a toast message on the screen with the ATMOSPHERE prefix.
+     * @param arguments
+     *        - contains the message which should be shown on the screen
+     */
+    private void showToast(Object[] arguments) {
+        final String message = FRAMEWORK_NAME_PREFIX + arguments[0];
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
