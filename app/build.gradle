@@ -40,7 +40,7 @@ android {
     }
 }
 
-version = '0.0.2'
+version = '0.0.3'
 
 dependencies {
     compile 'de.mindpipe.android:android-logging-log4j:1.0.3'
